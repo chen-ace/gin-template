@@ -29,6 +29,12 @@ export default [
     component: './Welcome',
   },
   {
+    path: '/chat',
+    name: 'chat',
+    icon: 'message',
+    component: './ChatBot',
+  },
+  {
     path: '/admin',
     name: 'admin',
     icon: 'crown',

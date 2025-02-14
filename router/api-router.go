@@ -10,5 +10,6 @@ func SetApiRouter(router *gin.Engine) {
 	{
 		apiRouter.POST("/login/account", controller.Login)
 		apiRouter.GET("/currentUser", controller.CurrentUser)
+		apiRouter.POST("/chat", controller.ChatSSE)
 	}
 }
