@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/sashabaranov/go-openai"
 	"net/http"
@@ -71,12 +72,14 @@ func ChatSSE(c *gin.Context) {
 			return
 		}
 
-		if len(response.Choices) > 0 {
-			content := response.Choices[0].Delta.Content
-			// 发送SSE消息
-			c.Writer.Write([]byte("data:" + content + "\n\n"))
-			c.Writer.Flush()
-			//println("发生的数据：" + content)
+		// 将 response 对象序列化为 JSON
+		responseJSON, err := json.Marshal(response)
+		if err != nil {
+			println("JSON 序列化失败:", err.Error())
+			continue // 或者根据你的需求进行错误处理
 		}
+
+		// 发送SSE消息
+		c.Writer.Write([]byte("data: " + string(responseJSON) + "\n\n"))
 	}
 }
