@@ -12,6 +12,12 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+type ChatRequest struct {
+	Messages []Message `json:"messages"`
+	Model    string    `json:"model"`
+	Stream   bool      `json:"stream"`
+}
+
 func ChatSSE(c *gin.Context) {
 	// 设置SSE headers
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
@@ -19,8 +25,8 @@ func ChatSSE(c *gin.Context) {
 	c.Writer.Header().Set("Connection", "keep-alive")
 
 	// 读取请求体
-	var message Message
-	if err := c.BindJSON(&message); err != nil {
+	var request ChatRequest
+	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -30,16 +36,19 @@ func ChatSSE(c *gin.Context) {
 	// 创建OpenAI客户端
 	client := openai.NewClientWithConfig(config)
 
+	transformedMessages := make([]openai.ChatCompletionMessage, len(request.Messages))
+	for i, r := range request.Messages {
+		transformedMessages[i] = openai.ChatCompletionMessage{
+			Role:    r.Role,
+			Content: r.Content,
+		}
+	}
+
 	// 准备OpenAI请求
 	req := openai.ChatCompletionRequest{
-		Model: "Qwen2.5-32B-Instruct",
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    message.Role,
-				Content: message.Content,
-			},
-		},
-		Stream: true,
+		Model:    request.Model,
+		Messages: transformedMessages,
+		Stream:   true,
 	}
 
 	// 创建流式响应
@@ -64,11 +73,10 @@ func ChatSSE(c *gin.Context) {
 
 		if len(response.Choices) > 0 {
 			content := response.Choices[0].Delta.Content
-			if content != "" {
-				// 发送SSE消息
-				c.Writer.Write([]byte("data: " + content + "\n\n"))
-				c.Writer.Flush()
-			}
+			// 发送SSE消息
+			c.Writer.Write([]byte("data:" + content + "\n\n"))
+			c.Writer.Flush()
+			//println("发生的数据：" + content)
 		}
 	}
 }
