@@ -80,6 +80,9 @@ func ChatSSE(c *gin.Context) {
 		}
 
 		// 发送SSE消息
-		c.Writer.Write([]byte("data: " + string(responseJSON) + "\n\n"))
+		_, err = c.Writer.Write([]byte("data: " + string(responseJSON) + "\n\n"))
+		if err != nil {
+			return
+		}
 	}
 }

@@ -8,7 +8,7 @@ toolchain go1.24.1
 require (
 	github.com/gin-contrib/static v1.1.3
 	github.com/gin-gonic/gin v1.10.0
-	github.com/sashabaranov/go-openai v1.37.0
+	github.com/sashabaranov/go-openai v1.38.1
 )
 
 require (
